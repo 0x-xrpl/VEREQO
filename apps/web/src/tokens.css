@@ -1,0 +1,32 @@
+/* Instrument presentation and interaction. */
+:root {
+  --paper: #f5f7f6; --white: #fafbfa; --aluminum: #e6eae9; --soft: #edf0ef;
+  --edge: #d3d9d8; --edge2: #bdc8c5; --ink: #202729; --mid: #596a68; --low: #748581;
+  --green: #466a60; --greenbg: #e9f0ed; --red: #a64f43; --redbg: #f5e8e4; --orange: #e97851;
+  --ui: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px;
+  --space-8: 32px; --space-12: 48px; --space-16: 64px;
+  --radius-control: 8px; --radius-panel: 20px; --radius-instrument: 26px;
+  --surface-ceramic: linear-gradient(145deg, #fdfefd, #f4f7f5);
+  --surface-titanium: linear-gradient(122deg, #fefefe, #e8eded 27%, #f3f6f5 74%, #dfe6e4);
+  --shadow: 0 18px 43px rgb(53 69 71 / 7%), 0 4px 12px rgb(63 70 73 / 3%);
+  --motion-press: 140ms; --motion-control: 180ms; --motion-panel: 280ms; --motion-cause: 460ms;
+  --ease-instrument: cubic-bezier(.2,.75,.2,1); --ease-cause: cubic-bezier(.22,.68,.25,1);
+}
+html { color-scheme: light; }
+button, a, input { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, input:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+  outline: 3px solid var(--orange); outline-offset: 4px;
+}
+::selection { background: #dce8e1; color: var(--ink); }
+.productLanding { --u-ink: var(--ink); --u-muted: var(--mid); --u-green: var(--green); --u-fast: var(--motion-press); --u-state: var(--motion-panel); --u-ease: var(--ease-instrument); }
+.key, .miniBtn, .modeGroup button, .langOption { min-height: 44px; }
+.displayValue, .dialValue, .u-display > strong { font-variant-numeric: tabular-nums; }
+.key, .miniBtn, .u-story-keys button { transition: transform var(--motion-press) var(--ease-instrument), box-shadow var(--motion-press) var(--ease-instrument), background var(--motion-control); }
+@keyframes panel-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes causal-turn { from { transform: perspective(600px) rotateY(-12deg) translateY(3px); } to { transform: perspective(600px) rotateY(0) translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion-press: 0ms; --motion-control: 0ms; --motion-panel: 0ms; --motion-cause: 0ms; }
+  *, *::before, *::after { animation: none !important; transition-duration: 0ms !important; scroll-behavior: auto !important; }
+}
