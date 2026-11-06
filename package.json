@@ -1,0 +1,42 @@
+{
+  "name": "vereqo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0 <23 || >=24"
+  },
+  "scripts": {
+    "dev": "node --import tsx scripts/dev.ts",
+    "start": "node --import tsx services/issuer/src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/disclosure.test.ts tests/consequence.test.ts tests/intent.test.ts tests/red-team-intent-graph.test.ts tests/controls.test.ts tests/graph-inspection.test.ts tests/injective-readiness.test.ts",
+    "test:integration": "vitest run tests/persistence.test.ts tests/demo-persistence.test.ts tests/http.test.ts tests/red-team-http.test.ts tests/red-team-disclosure.test.ts tests/red-team-reset.test.ts tests/backend.test.ts tests/react-api.test.tsx",
+    "test:ui": "vitest run tests/controls.test.ts tests/react-api.test.tsx",
+    "test:browser": "node --import tsx scripts/browser-qa.ts",
+    "test:contracts": "forge test --root contracts -vv",
+    "build": "vite build",
+    "check": "npm run typecheck && npm test && npm run build",
+    "evidence": "node --import tsx scripts/evidence.ts",
+    "smoke": "node --import tsx scripts/smoke.ts"
+  },
+  "dependencies": {
+    "ethers": "6.17.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.2.1",
+    "happy-dom": "21.0.4",
+    "playwright": "1.64.1",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vite": "8.3.5",
+    "vitest": "5.1.0"
+  },
+  "description": "Confidential Proof & Consequence Instrument for Injective Financial Operations."
+}
