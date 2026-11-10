@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "1.0.0",
+  "dataClass": "SYNTHETIC_REHEARSAL",
+  "targetNetwork": {
+    "name": "Injective EVM Testnet",
+    "chainId": 1439,
+    "verifiedOnChain": false
+  },
+  "chainEvidence": {
+    "transactionHash": null,
+    "blockHash": null,
+    "blockHeight": null,
+    "marketId": null,
+    "orderHash": null,
+    "executionStatus": "NOT_EXECUTED"
+  },
+  "releaseClaims": {
+    "realWalletSigned": false,
+    "realGroth16Proved": false,
+    "gateExecuted": false,
+    "orderCreated": false,
+    "orderFilled": false
+  },
+  "scenarioId": "S05-cancel-vs-fill",
+  "title": "Cancellation while partly filled",
+  "businessQuestion": "What if cancellation races with a partial fill?",
+  "category": "LIFECYCLE",
+  "story": "A previously resting order has synthetic partial fill. Cancellation is requested but not confirmed.",
+  "inputs": {
+    "intentId": "intent-A01",
+    "orderHash": null,
+    "syntheticOrderId": "synthetic-order-A01",
+    "requestedQuantity": "40",
+    "simulatedFilledQuantity": "10",
+    "simulatedRemainingQuantity": "30",
+    "cancelRequested": true,
+    "cancelConfirmed": false
+  },
+  "operatorActions": [
+    "LOAD_SYNTHETIC_ORDER",
+    "PREVIEW_REVOKE",
+    "REQUEST_CANCEL_SIMULATION",
+    "RECONCILE"
+  ],
+  "expectedObservations": [
+    {
+      "at": "REQUEST_CANCEL_SIMULATION",
+      "state": "CANCEL_REQUESTED_NOT_CONFIRMED"
+    },
+    {
+      "at": "RECONCILE",
+      "state": "UNKNOWN",
+      "reason": "No real chain receipt or order-state readback; remaining quantity may change"
+    }
+  ],
+  "proofRequirement": "GENERATE_AND_VERIFY_WITH_REAL_ENGINE_WHEN_AVAILABLE",
+  "privacy": "DO_NOT_SEND_PRIVATE_WITNESS_TO_BROWSER",
+  "notes": [
+    "Do not represent synthetic-order-A01 as an Injective order hash"
+  ]
+}

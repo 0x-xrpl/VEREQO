@@ -16,7 +16,7 @@ describe('Living Instrument entry', () => {
   it('offers real entry and three illustrative scenes without making API requests', async () => {
     const fetch = vi.fn(), start = vi.fn(); vi.stubGlobal('fetch', fetch);
     await act(async () => root.render(<Landing language="ja" onStart={start} />));
-    expect(host.querySelector('h1')?.textContent).toContain('AIに任せる注文');
+    expect(host.querySelector('h1')?.textContent).toContain('提案を検査し、境界を保つ。');
     expect(host.querySelector('[data-testid="live-hero"] img')).toBeNull();
     expect(control('hero-lcd').textContent).toBe('128');
     const bars = [...host.querySelectorAll('.heroMeter i')];

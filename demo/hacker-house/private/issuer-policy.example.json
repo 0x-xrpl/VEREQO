@@ -1,0 +1,19 @@
+{
+  "dataClass": "SYNTHETIC_PRIVATE_SERVER_ONLY",
+  "purpose": "Local QA witness generator illustration, never public browser, never real financial limits",
+  "policies": [
+    {
+      "credentialId": "credential-A",
+      "maxOrderNotionalQuote": "600",
+      "asset": "USDT",
+      "issuerId": "issuer-demo-01"
+    },
+    {
+      "credentialId": "credential-B",
+      "maxOrderNotionalQuote": "200",
+      "asset": "USDT",
+      "issuerId": "issuer-demo-01"
+    }
+  ],
+  "disclaimer": "No signatures or valid proof; never commit real policy or keys"
+}

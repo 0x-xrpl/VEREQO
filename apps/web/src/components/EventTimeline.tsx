@@ -3,14 +3,16 @@ import type { Language } from '../i18n';
 import { words } from '../operatingModel';
 import type { useOperatingExperience } from '../useOperatingExperience';
 import { statusLabel } from './ConsequenceSpace';
+import { FinancialObjectTracePanel, type FinancialObjectTrace } from './FinancialObjectTrace';
 
-export function EventTimeline({language,operating:o}:{language:Language;operating:ReturnType<typeof useOperatingExperience>}){
+export function EventTimeline({language,operating:o,financialTrace=null}:{language:Language;operating:ReturnType<typeof useOperatingExperience>;financialTrace?:FinancialObjectTrace|null}){
   const ja=language==='ja',event=o.inspection?.event;
   const [stream,setStream]=useState<'scenario'|'graph'|'disclosure'>('scenario'),[page,setPage]=useState(0);
   const records=o.events.filter(item=>item.data.stream===stream),pages=Math.max(1,Math.ceil(records.length/4)),index=Math.min(page,pages-1);
   useEffect(()=>{if(!event)return;setStream(event.data.stream);const position=o.events.filter(item=>item.data.stream===event.data.stream).findIndex(item=>item.id===event.id);setPage(Math.max(0,Math.floor(position/4)));},[event?.id]);
   return <section className="eventTimeline" data-testid="event-timeline" aria-label={ja?'イベント履歴':'Event history'}>
     <div className="timelineHeading"><div><span className="eyebrow">02 / TIME & EVIDENCE</span><h2>{ja?'判断を、たどる。':'Trace the decision.'}</h2></div><span className="timelineState">{o.playing?'SIMULATED / PLAYING':o.historical?'HISTORICAL / READ-ONLY':'CURRENT / LOCAL'}</span></div>
+    <FinancialObjectTracePanel trace={financialTrace} language={language} surface="EVIDENCE" />
     <div className="timelineControls"><button type="button" data-testid="timeline-start" onClick={o.start}>{ja?'開始':'Start'}</button><button type="button" data-testid="timeline-pause" disabled={!o.playing} onClick={o.pause}>{ja?'一時停止':'Pause'}</button><button type="button" data-testid="timeline-resume" disabled={o.playing} onClick={o.resume}>{ja?'再開':'Resume'}</button><button type="button" data-testid="timeline-replay" onClick={o.start}>{ja?'最初から再生':'Replay'}</button><button type="button" className="returnCurrent" data-testid="return-current" disabled={o.reconciling} onClick={()=>void o.returnCurrent()}>{o.reconciling?(ja?'再取得中…':'Reconciling…'):(ja?'現在へ戻る / GET':'Return to current / GET')} ↗</button></div>
     <p className="timelineMethod">{ja?'再生するのは合成シナリオだけです。実APIのグラフと開示は別々の連番で、共通の時系列ではありません。再生で回答・失効・注文は実行されません。':'Playback uses seeded scenario events only. API graph and disclosure records have separate sequence clocks. Playback releases no answer, revokes nothing and sends no order.'}</p>
     <div className="timelineSources" role="group" aria-label={ja?'別々の記録ストリーム':'Separate record streams'}>{(['scenario','graph','disclosure'] as const).map(value=><button type="button" key={value} data-testid={`timeline-source-${value}`} aria-pressed={stream===value} disabled={o.reconciling} onClick={()=>{setStream(value);setPage(0);}}>{value==='scenario'?(ja?'合成シナリオ':'Scenario'):value==='graph'?(ja?'資格の変更':'Credential changes'):(ja?'回答の公開履歴':'Disclosures')}<span>{o.events.filter(item=>item.data.stream===value).length}</span></button>)}</div>

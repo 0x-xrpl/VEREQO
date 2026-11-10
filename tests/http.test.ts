@@ -20,13 +20,19 @@ afterEach(async () => {
   for (const clean of cleanup.splice(0).reverse()) await clean();
 });
 
-it('serves the public font with its actual MIME while keeping private/source extensions unavailable',async()=>{
+it('serves public fonts and solid brand SVG/PNG assets with their actual MIME while keeping private/source extensions unavailable',async()=>{
   const app=createLocalApp({databasePath:':memory:',staticRoot:join(process.cwd(),'apps/web/public')});cleanup.push(()=>app.close());
   await new Promise<void>(resolve=>app.server.listen(0,'127.0.0.1',resolve));const address=app.server.address();
   if(!address||typeof address==='string')throw Error('No listener');const base=`http://127.0.0.1:${address.port}`;
   const image=await fetch(`${base}/fonts/instrument-sans-latin.woff2`);
   expect(image.status).toBe(200);expect(image.headers.get('content-type')).toMatch(/^font\/woff2/);
   expect(image.headers.get('x-content-type-options')).toBe('nosniff');expect((await image.arrayBuffer()).byteLength).toBeGreaterThan(1000);
+  const brand=await fetch(`${base}/brand/VEREQO_ICON_SOLID.svg`);
+  expect(brand.status).toBe(200);expect(brand.headers.get('content-type')).toMatch(/^image\/svg\+xml/);
+  expect(await brand.text()).toContain('<path');
+  const appIcon=await fetch(`${base}/brand/VEREQO_ICON_SOLID_4X.png`);
+  expect(appIcon.status).toBe(200);expect(appIcon.headers.get('content-type')).toMatch(/^image\/png/);
+  expect((await appIcon.arrayBuffer()).byteLength).toBeGreaterThan(1000);
   for(const path of ['/../../services/issuer/src/store.ts','/.env','/issuer.sqlite','/product/../services/issuer/src/store.ts'])expect((await fetch(`${base}${path}`)).status).toBe(404);
 });
 

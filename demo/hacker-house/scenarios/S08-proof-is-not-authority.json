@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "1.0.0",
+  "dataClass": "SYNTHETIC_REHEARSAL",
+  "targetNetwork": {
+    "name": "Injective EVM Testnet",
+    "chainId": 1439,
+    "verifiedOnChain": false
+  },
+  "chainEvidence": {
+    "transactionHash": null,
+    "blockHash": null,
+    "blockHeight": null,
+    "marketId": null,
+    "orderHash": null,
+    "executionStatus": "NOT_EXECUTED"
+  },
+  "releaseClaims": {
+    "realWalletSigned": false,
+    "realGroth16Proved": false,
+    "gateExecuted": false,
+    "orderCreated": false,
+    "orderFilled": false
+  },
+  "scenarioId": "S08-proof-is-not-authority",
+  "title": "A locally verified proof cannot override a revoked mandate",
+  "businessQuestion": "Will the local ActionGate reject this exact order after its issuer mandate is revoked and its credential epoch advances?",
+  "category": "CRITICAL_AUTHORITY",
+  "story": "Use the existing exact order vector and locally verify its Groth16 proof. The proof is bound to credential epoch 1. A local Foundry negative test then revokes that mandate and advances the Gate epoch to 2; the Gate rejects before calling the mock Exchange. The setup is untrusted, the signer is a test fixture, and no owner signature or chain action is represented.",
+  "inputs": {
+    "intent": {
+      "intentId": "local-financial-vector-01",
+      "principalId": "0xe05fcC23807536bEe418f142D19fa0d21BB0cfF7",
+      "agentId": "0x0376AAc07Ad725E01357B1725B5ceC61aE10473c",
+      "issuerId": "0x6C1a01C2aB554930A937B0a2E8105fB47946c679",
+      "credentialId": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "mandateId": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "marketSymbol": "INJ/USDT",
+      "side": "BUY",
+      "type": "LIMIT",
+      "quantity": "2",
+      "limitPrice": "1",
+      "units": "INJ, USDT/INJ",
+      "maxNotionalQuote": "2",
+      "signedIntent": null,
+      "issuerSignature": null,
+      "zkProof": null
+    },
+    "credentialEpochAtIntent": 1,
+    "credentialEpochNow": 2,
+    "proofArtifact": "contracts/test/fixtures/financial-authorization.json#proof",
+    "onchainRevocationPerformed": false
+  },
+  "operatorActions": [
+    "LOAD_EXACT_CANONICAL_INTENT_VECTOR",
+    "VERIFY_PINNED_LOCAL_GROTH16_TEST_PROOF",
+    "PREVIEW_CREDENTIAL_EPOCH_CHANGE",
+    "TEST_ACTIONGATE_REJECTION_BEFORE_PRECOMPILE"
+  ],
+  "expectedObservations": [
+    {
+      "at": "VERIFY_PINNED_LOCAL_GROTH16_TEST_PROOF",
+      "state": "LOCAL_GROTH16_PROOF_VERIFIED_FOR_EXACT_INTENT; UNTRUSTED_SETUP; NO_OWNER_SIGNATURE"
+    },
+    {
+      "at": "PREVIEW_CREDENTIAL_EPOCH_CHANGE",
+      "state": "WHAT_IF_ONLY"
+    },
+    {
+      "at": "TEST_ACTIONGATE_REJECTION_BEFORE_PRECOMPILE",
+      "state": "LOCAL_FOUNDRY_REJECTION_BEFORE_EXCHANGE_PRECOMPILE",
+      "reason": "ISSUER_MANDATE_REVOKED_AND_EPOCH_ADVANCED; PROOF_ALONE_IS_NOT_AUTHORITY"
+    }
+  ],
+  "proofRequirement": "VERIFY_EXISTING_EXACT_LOCAL_TEST_VECTOR; SINGLE_MACHINE_SETUP_IS_UNTRUSTED",
+  "privacy": "DO_NOT_SEND_PRIVATE_WITNESS_TO_BROWSER",
+  "notes": [
+    "The portable Demo Kit still contains no proof bytes, wallet signature, issuer signature, or chain evidence",
+    "VEREQO verifies the separate checked-in public financial authorization vector against the pinned local verification key",
+    "The Foundry rejection is local-only; the Gate is not deployed and the Exchange Precompile is mocked",
+    "No owner intent signature, Testnet transaction, order, fill, or actual credential revocation occurs"
+  ]
+}

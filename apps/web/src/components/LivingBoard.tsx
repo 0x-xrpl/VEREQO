@@ -22,11 +22,11 @@ export function LivingBoard({ graph, changes, selected, depth, language, preview
       const affected = !!actionChange;
       return <div className={`brokerLane ${affected ? 'laneChanged' : ''}`} key={lane} data-testid={`broker-${lane}`}>
         <div className="laneHeading"><strong>{s.broker} {lane}</strong><span>{lane === 'A' ? '01' : '02'}</span></div>
-        <button type="button" className={`credentialTile ${credentialChanged && animate ? 'nodeChanged' : ''}`} aria-pressed={selected === credential.id} onClick={() => onSelect(credential.id)} data-node-id={credential.id}>
+        <button type="button" className={`credentialTile ${credentialChanged && animate ? 'nodeChanged' : ''}`} aria-pressed={selected === credential.id} onClick={() => onSelect(credential.id)} data-node-id={credential.id} data-node-state={credential.state}>
           <span className="eyebrow">{s.credential}</span><span className="credentialName">{name(credential)}</span><span className={`nodeState state-${credential.state.toLowerCase()}`}>{status(credential.state)}</span>
         </button>
         {related.includes(action.id) && <div className="boardConnector"><span aria-hidden="true"/><small>{s.depends} · {related.length - 1}{s.dependencyCount}</small></div>}
-        <button type="button" className={`outcomeCard ${lane === 'B' ? 'quiet' : ''} ${affected ? 'affected' : ''} ${affected && animate ? 'nodeChanged' : ''}`} style={{ '--cause-delay': `${Math.min(3, (actionChange?.path.length ?? 1) - 1) * 60}ms` } as CSSProperties} aria-pressed={selected === action.id} aria-label={t('inspect', { name: name(action) })} onClick={() => onSelect(action.id)} data-node-id={action.id}>
+        <button type="button" className={`outcomeCard ${lane === 'B' ? 'quiet' : ''} ${affected ? 'affected' : ''} ${affected && animate ? 'nodeChanged' : ''}`} style={{ '--cause-delay': `${Math.min(3, (actionChange?.path.length ?? 1) - 1) * 60}ms` } as CSSProperties} aria-pressed={selected === action.id} aria-label={t('inspect', { name: name(action) })} onClick={() => onSelect(action.id)} data-node-id={action.id} data-node-state={action.state}>
           <div className="outhead"><span>{s.operation}</span><span>{s.localEligibility}</span></div>
           <div className="actionLine"><div className="actionStat"><i className="dotStatus"/><span>{status(action.state)}</span></div><h4>{name(action)}</h4><p>{t(lane === 'B' ? 'actionBDetail' : 'aCurrentDetail')}</p><p className="beforeAfter">{t('beforeAfter', { before: status(actionChange?.before ?? action.state), after: status(actionChange?.after ?? action.state) })}</p><span className="boardInspect">{s.inspect} ↗</span></div>
         </button>

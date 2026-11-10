@@ -1,8 +1,9 @@
 import { createServer } from 'vite';
-import { createLocalApp } from '../services/issuer/src/http';
+import { createConfiguredLocalApp } from '../services/issuer/src/configured-app';
 
 process.umask(0o077);
-const app = createLocalApp({ databasePath: '.local/issuer.sqlite' });
+const databasePath = process.env.VEREQO_DEMO_IN_MEMORY === '1' ? ':memory:' : '.local/issuer.sqlite';
+const app = await createConfiguredLocalApp(databasePath);
 await new Promise<void>((resolve, reject) => {
   app.server.once('error', reject); app.server.listen(4317, '127.0.0.1', resolve);
 });

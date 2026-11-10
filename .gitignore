@@ -16,3 +16,16 @@ coverage/
 *.tar
 *.mp4
 *.webm
+*.mov
+*.har
+*.db
+*.db-*
+*.sqlite-shm
+*.sqlite-wal
+*.wav
+*.mp3
+*.m4a
+*.aac
+/submission/**/media/
+/VEREQO_PRODUCTION_VECTOR_REBUILD/
+/VEREQO_BRAND_MASTER_VECTOR_FINAL/

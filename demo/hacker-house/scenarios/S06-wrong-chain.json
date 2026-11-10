@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "1.0.0",
+  "dataClass": "SYNTHETIC_REHEARSAL",
+  "targetNetwork": {
+    "name": "Injective EVM Testnet",
+    "chainId": 1439,
+    "verifiedOnChain": false
+  },
+  "chainEvidence": {
+    "transactionHash": null,
+    "blockHash": null,
+    "blockHeight": null,
+    "marketId": null,
+    "orderHash": null,
+    "executionStatus": "NOT_EXECUTED"
+  },
+  "releaseClaims": {
+    "realWalletSigned": false,
+    "realGroth16Proved": false,
+    "gateExecuted": false,
+    "orderCreated": false,
+    "orderFilled": false
+  },
+  "scenarioId": "S06-wrong-chain",
+  "title": "Wallet on wrong network",
+  "businessQuestion": "Can a signed action from the wrong chain be accepted?",
+  "category": "NEGATIVE_AUTH",
+  "story": "A synthetic provider reports mainnet chain 1 instead of target Testnet EVM chain 1439.",
+  "inputs": {
+    "intent": {
+      "intentId": "intent-A01",
+      "principalId": "principal-operator-01",
+      "agentId": "agent-external-A",
+      "issuerId": "issuer-demo-01",
+      "credentialId": "credential-A",
+      "mandateId": "mandate-order-A01",
+      "marketSymbol": "INJ/USDT",
+      "side": "BUY",
+      "type": "LIMIT",
+      "quantity": "40",
+      "limitPrice": "12",
+      "units": "INJ, USDT/INJ",
+      "maxNotionalQuote": "480",
+      "signedIntent": null,
+      "issuerSignature": null,
+      "zkProof": null
+    },
+    "providerChainId": 1,
+    "expectedChainId": 1439,
+    "walletAddress": null
+  },
+  "operatorActions": [
+    "CONNECT_SYNTHETIC_PROVIDER",
+    "CHECK_CHAIN",
+    "ATTEMPT_AUTHENTICATION"
+  ],
+  "expectedObservations": [
+    {
+      "at": "CHECK_CHAIN",
+      "state": "DENIED",
+      "reason": "WRONG_CHAIN"
+    },
+    {
+      "at": "ATTEMPT_AUTHENTICATION",
+      "state": "NO_TRANSACTION_SIGNING"
+    }
+  ],
+  "proofRequirement": "GENERATE_AND_VERIFY_WITH_REAL_ENGINE_WHEN_AVAILABLE",
+  "privacy": "DO_NOT_SEND_PRIVATE_WITNESS_TO_BROWSER",
+  "notes": []
+}

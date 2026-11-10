@@ -1,0 +1,27 @@
+/** Synthetic local keys/context only. Never signs or submits a transaction. */
+import * as snarkjs from 'snarkjs';
+import {buildPoseidon} from 'circomlibjs';
+import {Wallet,TypedDataEncoder,zeroPadValue,toBeHex} from 'ethers';
+import {mkdirSync,mkdtempSync,writeFileSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
+import {LOCAL_DIR,validatePinnedSources,validateCompiledArtifacts,validatePinnedKey} from './zk-artifacts.mjs';
+const {manifest}=validatePinnedSources();
+mkdirSync(LOCAL_DIR,{recursive:true,mode:0o700});
+const dir=mkdtempSync(`${LOCAL_DIR}/gate-checked-build-`);
+execFileSync(process.execPath,['node_modules/circom2/cli.js','circuits/confidential_limit.circom','--r1cs','--wasm','-l','node_modules','-o',dir],{stdio:'pipe'});
+validateCompiledArtifacts(dir,manifest);
+const keyPath=`${LOCAL_DIR}/local_final.zkey`;const vk=await validatePinnedKey(keyPath,manifest);
+const address=n=>zeroPadValue(toBeHex(n),20);
+const issuer=address(123),gate=address(456),asset=address(789);
+const key=n=>zeroPadValue(toBeHex(n),32);
+const principal=new Wallet(key(0xA11CE)).address,agent=new Wallet(key(0xB0B)).address;
+const intent={asset,recipient:address(0xBEEF),agent,credential:key(1),credentialEpoch:'1',policyEpoch:'1',amount:'1000',nonce:'0',deadline:'1900000000'};
+const types={ProtectedTransfer:[{name:'asset',type:'address'},{name:'recipient',type:'address'},{name:'agent',type:'address'},{name:'credential',type:'bytes32'},{name:'credentialEpoch',type:'uint256'},{name:'policyEpoch',type:'uint256'},{name:'amount',type:'uint256'},{name:'nonce',type:'uint256'},{name:'deadline',type:'uint64'}]};
+const digest=TypedDataEncoder.hash({name:'VEREQO Protected Transfer',version:'1',chainId:'1439',verifyingContract:gate},types,intent);
+const input={maxNotional:'100000',salt:'9999',requiredExposure:intent.amount,intentHi:(BigInt(digest)>>128n).toString(),intentLo:(BigInt(digest)&((1n<<128n)-1n)).toString(),issuer:'123',chainId:'1439',gate:'456',credentialEpoch:'1',policyEpoch:'1',expiry:'2000000000'};
+const poseidon=await buildPoseidon();input.commitment=poseidon.F.toString(poseidon([input.maxNotional,input.salt,input.issuer,input.chainId,input.gate,input.credentialEpoch,input.policyEpoch,input.expiry,input.intentHi,input.intentLo].map(BigInt)));
+const {proof,publicSignals}=await snarkjs.groth16.fullProve(input,`${dir}/confidential_limit_js/confidential_limit.wasm`,keyPath);
+if(!await snarkjs.groth16.verify(vk,publicSignals,proof))throw Error('FRESH_GATE_PROOF_INVALID');
+const solidity=JSON.parse('['+await snarkjs.groth16.exportSolidityCallData(proof,publicSignals)+']');
+writeFileSync(`${LOCAL_DIR}/fresh-gate-proof.json`,JSON.stringify({scope:'LOCAL_SYNTHETIC_TEST_KEYS_ONLY_NOT_A_NEW_CREDENTIAL_OR_CHAIN_ACTION',issuer,gate,asset,principal,agent,intent,digest,proof,publicSignals,solidity},null,2),{mode:0o600});
+console.log(JSON.stringify({status:'LOCAL_PROOF_GENERATED_AND_VERIFIED',digest,publicInputs:publicSignals.length,checkedInVerifierChanged:false}));process.exit(0);

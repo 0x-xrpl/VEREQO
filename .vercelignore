@@ -1,0 +1,36 @@
+# Keep the Vite app, approved solid brand assets, and licensed local fonts.
+# Exclude only local/private material and files that are not runtime build inputs.
+.git/**
+node_modules/**
+dist/**
+.local/**
+**/.local/**
+.env
+.env.*
+**/.env
+**/.env.*
+**/*.sqlite*
+**/*.db
+**/*.db-*
+**/*.pem
+**/*.key
+**/*.har
+**/*.log
+**/*.mov
+**/*.mp4
+**/*.webm
+**/*.wav
+**/*.mp3
+**/*.m4a
+**/*.aac
+**/*.flac
+**/*.ogg
+
+# Internal or owner-only materials; none are required by the web build.
+/submission/**
+/docs/evidence/**
+/docs/private/**
+/VEREQO_PRODUCTION_VECTOR_REBUILD/**
+/VEREQO_BRAND_MASTER_VECTOR_FINAL/**
+
+# apps/web/public/brand and apps/web/public/fonts intentionally remain included.

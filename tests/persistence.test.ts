@@ -95,11 +95,49 @@ describe('persistent atomic disclosure release', () => {
     expect(() => db.exec('UPDATE witnesses SET value=45')).toThrow();
     expect(store.view(ctx).history).toEqual([]);
   });
+  it('prevents deleting the latest disclosure or policy so replay cannot restore forgotten candidates', () => {
+    const { db, store } = setup(74); firstTwo(store);
+    const row = db.prepare('SELECT id FROM scopes').get();
+    expect(row).toBeDefined();
+    const scopeId = String(row!.id);
+    const saved = store.view(ctx);
+    expect(saved.candidates).toHaveLength(81);
+    expect(() => db.prepare('DELETE FROM disclosures WHERE scope_id=? AND sequence=2').run(scopeId)).toThrow();
+    expect(store.view(ctx).candidates).toEqual(saved.candidates);
+    const denied = ask(store, 70, 'delete-latest-attempt');
+    expect(denied.status).toBe('DENIED');
+    expect(denied).not.toHaveProperty('answer');
+    expect(() => db.prepare('DELETE FROM policies WHERE scope_id=? AND epoch=1').run(scopeId)).toThrow();
+    const after = store.view(ctx);
+    expect(after.candidates).toEqual(saved.candidates);
+    expect(after.history).toHaveLength(3);
+  });
+  it('exposes a blinded, scope-specific disclosure head that survives restart and advances with every record', () => {
+    const file = tempFile(), { store } = setup(74, () => {}, file);
+    const empty = store.historyHead(ctx);
+    expect(empty).toMatchObject({ historySequence: '0', policyEpoch: '1' });
+    expect(empty.historyRoot).toMatch(/^0x[0-9a-f]{64}$/);
+    firstTwo(store);
+    const recorded = store.historyHead(ctx);
+    expect(recorded.historySequence).toBe('2');
+    expect(recorded.historyRoot).not.toBe(empty.historyRoot);
+    store.close();
+    const recovered = new IssuerStore(new DatabaseSync(file)); resources.push(() => recovered.close());
+    expect(recovered.historyHead(ctx)).toEqual(recorded);
+    const otherScope = { ...ctx, scope: { ...ctx.scope, subject: 'other-subject' } };
+    recovered.provision(otherScope.scope, otherScope.principal, 74);
+    expect(recovered.historyHead(otherScope).historyRoot).not.toBe(recorded.historyRoot);
+    expect(() => recovered.historyHead({ ...ctx, principal: 'unauthorized' })).toThrow('UNAUTHORIZED');
+  });
   it('fails closed on contradictory, tampered or gapped public histories', () => {
     for (const corruption of ['answer', 'count', 'gap', 'denial-answer', 'nested-field']) {
       const { db, store } = setup(); firstTwo(store); ask(store, 70);
-      db.exec('DROP TRIGGER disclosure_immutable');
-      if (corruption === 'gap') db.exec('DELETE FROM disclosures WHERE sequence=1');
+      db.exec('DROP TRIGGER disclosure_immutable; DROP TRIGGER disclosure_delete_immutable; DROP TRIGGER disclosure_commitment_delete_immutable;');
+      if (corruption === 'gap') {
+        const scopeId = String(db.prepare('SELECT id FROM scopes').get()!.id);
+        db.prepare('DELETE FROM disclosure_commitments WHERE scope_id=? AND sequence=1').run(scopeId);
+        db.prepare('DELETE FROM disclosures WHERE scope_id=? AND sequence=1').run(scopeId);
+      }
       else {
         const sequence = corruption === 'denial-answer' ? 3 : 2;
         const row = db.prepare('SELECT record FROM disclosures WHERE sequence=?').get(sequence)!;
