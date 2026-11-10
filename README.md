@@ -1,5 +1,3 @@
-<p align="center"><img src="apps/web/public/brand/VEREQO_WORDMARK_SOLID.svg" alt="VEREQO" width="300" /></p>
-
 # VEREQO
 
 **PROVE WHAT MATTERS. CONTROL WHAT FOLLOWS.**
