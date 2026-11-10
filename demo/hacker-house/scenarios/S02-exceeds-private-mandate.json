@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0.0",
+  "dataClass": "SYNTHETIC_REHEARSAL",
+  "targetNetwork": {
+    "name": "Injective EVM Testnet",
+    "chainId": 1439,
+    "verifiedOnChain": false
+  },
+  "chainEvidence": {
+    "transactionHash": null,
+    "blockHash": null,
+    "blockHeight": null,
+    "marketId": null,
+    "orderHash": null,
+    "executionStatus": "NOT_EXECUTED"
+  },
+  "releaseClaims": {
+    "realWalletSigned": false,
+    "realGroth16Proved": false,
+    "gateExecuted": false,
+    "orderCreated": false,
+    "orderFilled": false
+  },
+  "scenarioId": "S02-exceeds-private-mandate",
+  "title": "Confidential risk ceiling violated",
+  "businessQuestion": "Can an agent request 70 INJ when the private limit is lower?",
+  "category": "NEGATIVE_FINANCIAL",
+  "story": "Agent A asks for a larger trade whose 840 USDT notional exceeds a synthetic private ceiling of 600 USDT.",
+  "inputs": {
+    "intent": {
+      "intentId": "intent-A02",
+      "principalId": "principal-operator-01",
+      "agentId": "agent-external-A",
+      "issuerId": "issuer-demo-01",
+      "credentialId": "credential-A",
+      "mandateId": "mandate-order-A02",
+      "marketSymbol": "INJ/USDT",
+      "side": "BUY",
+      "type": "LIMIT",
+      "quantity": "70",
+      "limitPrice": "12",
+      "units": "INJ, USDT/INJ",
+      "maxNotionalQuote": "840",
+      "signedIntent": null,
+      "issuerSignature": null,
+      "zkProof": null
+    },
+    "privatePolicyFixtureRef": "private/issuer-policy.example.json"
+  },
+  "operatorActions": [
+    "LOAD_INTENT",
+    "EVALUATE_ISSUER_POLICY",
+    "ATTEMPT_PROOF",
+    "INSPECT_DENIAL"
+  ],
+  "expectedObservations": [
+    {
+      "at": "EVALUATE_ISSUER_POLICY",
+      "state": "DENIED",
+      "reason": "SYNTHETIC_LIMIT_EXCEEDED",
+      "privacyRequirement": "Never render 600 USDT as a public bound or proof output"
+    },
+    {
+      "at": "ATTEMPT_PROOF",
+      "state": "PROOF_NOT_AVAILABLE",
+      "reason": "No proof is included or fabricated"
+    }
+  ],
+  "proofRequirement": "GENERATE_AND_VERIFY_WITH_REAL_ENGINE_WHEN_AVAILABLE",
+  "privacy": "DO_NOT_SEND_PRIVATE_WITNESS_TO_BROWSER",
+  "notes": []
+}

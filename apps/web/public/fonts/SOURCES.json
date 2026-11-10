@@ -1,5 +1,5 @@
 {
-  "cssSource": "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&display=swap",
+  "cssSource": "LOCAL_WOFF2_ASSETS",
   "files": [
     {
       "path": "plex-mono-400.woff2",
@@ -26,5 +26,6 @@
       "bytes": 29904
     }
   ],
-  "note": "Original unmodified Latin WOFF2; Japanese uses system fallback. Actual rendering is not browser-verified."
+  "note": "Original unmodified Latin WOFF2; Japanese uses system fallback. Actual rendering is not browser-verified.",
+  "cssSourceNote": "The site loads the checked-in WOFF2 files from local paths. The original Google Fonts CSS request URL is omitted because its family-selection query is not needed at runtime."
 }

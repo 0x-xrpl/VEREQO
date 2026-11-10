@@ -9,6 +9,8 @@ interface DialProps {
   valueText: string;
   onChange: (value: number) => void;
   hero?: boolean;
+  onConfirm?: () => void;
+  confirmLabel?: string;
   decreaseLabel?: string;
   increaseLabel?: string;
   alternativeLabel?: string;
@@ -17,7 +19,7 @@ interface DialProps {
 
 interface Drag { pointerId: number; lastAngle: number; accumulated: number; start: number; min: number; max: number; centerX: number; centerY: number }
 
-export function Dial({ value, min, max, label, valueText, onChange, hero = false, decreaseLabel, increaseLabel, alternativeLabel, disabled = false }: DialProps) {
+export function Dial({ value, min, max, label, valueText, onChange, hero = false, decreaseLabel, increaseLabel, alternativeLabel, disabled = false, onConfirm, confirmLabel }: DialProps) {
   const lower = hero ? 1 : min;
   const upper = hero ? 3 : max;
   const current = clampDialValue(value, lower, upper);
@@ -61,10 +63,12 @@ export function Dial({ value, min, max, label, valueText, onChange, hero = false
         onLostPointerCapture={event => { if (drag.current?.pointerId === event.pointerId) drag.current = null; }}
         onKeyDown={event => {
           if (disabled) return;
+          if (onConfirm && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); onConfirm(); return; }
           const next = keyboardDialValue(event.key, current, lower, upper);
           if (next !== undefined) { event.preventDefault(); setValue(next); }
         }} />
       <div className="knobShell" aria-hidden="true"><div className="knobGrip"><i /></div></div>
+      {onConfirm && <button type="button" className="dialConfirm" data-testid={`${prefix}-confirm`} aria-label={confirmLabel ?? 'Confirm inspection target'} disabled={disabled} onClick={onConfirm}><span aria-hidden="true">↵</span></button>}
     </div></div>
     {!hero && <>
       <div className="dialInfo">

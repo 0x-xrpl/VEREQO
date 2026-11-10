@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.0.0",
+  "kitId": "vereqo-demo-kit-v1",
+  "product": "VEREQO",
+  "project": "Injective Hacker House",
+  "dataClass": "SYNTHETIC_REHEARSAL",
+  "status": "PORTABLE_FIXTURE_ONLY_NOT_INTEGRATED",
+  "createdFor": "manual local rehearsal and future VEREQO loader integration",
+  "targetBranchNote": "No assumption about local HEAD; read current Git state first",
+  "scenarios": [
+    {
+      "scenarioId": "S01-eligible-request",
+      "file": "scenarios/S01-eligible-request.json",
+      "category": "POSITIVE_BOUNDARY",
+      "title": "Agent proposes a bounded spot buy"
+    },
+    {
+      "scenarioId": "S02-exceeds-private-mandate",
+      "file": "scenarios/S02-exceeds-private-mandate.json",
+      "category": "NEGATIVE_FINANCIAL",
+      "title": "Confidential risk ceiling violated"
+    },
+    {
+      "scenarioId": "S03-revocation-causality",
+      "file": "scenarios/S03-revocation-causality.json",
+      "category": "WHAT_IF",
+      "title": "Revoke Agent A, leave B unaffected"
+    },
+    {
+      "scenarioId": "S04-unverified-market",
+      "file": "scenarios/S04-unverified-market.json",
+      "category": "FAIL_CLOSED",
+      "title": "No trusted market parameters"
+    },
+    {
+      "scenarioId": "S05-cancel-vs-fill",
+      "file": "scenarios/S05-cancel-vs-fill.json",
+      "category": "LIFECYCLE",
+      "title": "Cancellation while partly filled"
+    },
+    {
+      "scenarioId": "S06-wrong-chain",
+      "file": "scenarios/S06-wrong-chain.json",
+      "category": "NEGATIVE_AUTH",
+      "title": "Wallet on wrong network"
+    },
+    {
+      "scenarioId": "S07-disclosure-sequence",
+      "file": "scenarios/S07-disclosure-sequence.json",
+      "category": "PRIVACY",
+      "title": "Repeated queries may leak a private threshold"
+    },
+    {
+      "scenarioId": "S08-proof-is-not-authority",
+      "file": "scenarios/S08-proof-is-not-authority.json",
+      "category": "CRITICAL_AUTHORITY",
+      "title": "A correct proof must not override revoked authority"
+    }
+  ],
+  "evidenceRules": {
+    "noFabricatedWalletSignatures": true,
+    "noFabricatedGroth16Proofs": true,
+    "noFabricatedTransactionHashes": true,
+    "noProductionDeployment": true,
+    "noPrivateWitnessInPublicClient": true
+  },
+  "adapterStatus": "NOT_IMPLEMENTED_IN_VEREQO_BY_THIS_KIT"
+}

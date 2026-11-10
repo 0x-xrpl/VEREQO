@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "1.0.0",
+  "dataClass": "SYNTHETIC_REHEARSAL",
+  "targetNetwork": {
+    "name": "Injective EVM Testnet",
+    "chainId": 1439,
+    "verifiedOnChain": false
+  },
+  "chainEvidence": {
+    "transactionHash": null,
+    "blockHash": null,
+    "blockHeight": null,
+    "marketId": null,
+    "orderHash": null,
+    "executionStatus": "NOT_EXECUTED"
+  },
+  "releaseClaims": {
+    "realWalletSigned": false,
+    "realGroth16Proved": false,
+    "gateExecuted": false,
+    "orderCreated": false,
+    "orderFilled": false
+  },
+  "scenarioId": "S01-eligible-request",
+  "title": "Agent proposes a bounded spot buy",
+  "businessQuestion": "Can this exact 40 INJ order be authorized without exposing the private ceiling?",
+  "category": "POSITIVE_BOUNDARY",
+  "story": "A trading operator reviews an external AI Agent A request. Price and quantity are illustrative, not current Injective prices.",
+  "inputs": {
+    "intent": {
+      "intentId": "intent-A01",
+      "principalId": "principal-operator-01",
+      "agentId": "agent-external-A",
+      "issuerId": "issuer-demo-01",
+      "credentialId": "credential-A",
+      "mandateId": "mandate-order-A01",
+      "marketSymbol": "INJ/USDT",
+      "side": "BUY",
+      "type": "LIMIT",
+      "quantity": "40",
+      "limitPrice": "12",
+      "units": "INJ, USDT/INJ",
+      "maxNotionalQuote": "480",
+      "signedIntent": null,
+      "issuerSignature": null,
+      "zkProof": null
+    },
+    "privatePolicyFixtureRef": "private/issuer-policy.example.json",
+    "gateAggregateBudgetQuote": "1000"
+  },
+  "operatorActions": [
+    "LOAD_INTENT",
+    "INSPECT_FINANCIAL_FIELDS",
+    "REQUEST_PRIVATE_PROOF",
+    "REVIEW_MANDATE",
+    "PREVIEW_CONSEQUENCES",
+    "REQUEST_USER_APPROVAL"
+  ],
+  "expectedObservations": [
+    {
+      "at": "LOAD_INTENT",
+      "state": "DRAFT",
+      "why": "40 × 12 = 480 USDT; values and sources visible"
+    },
+    {
+      "at": "REQUEST_PRIVATE_PROOF",
+      "state": "REQUIRES_REAL_PROOF",
+      "why": "No signature, witness or valid Groth16 proof shipped in fixture"
+    },
+    {
+      "at": "REQUEST_USER_APPROVAL",
+      "state": "AWAITING_EXPLICIT_APPROVAL",
+      "why": "Never auto-sign, deploy, fund or send a transaction"
+    }
+  ],
+  "proofRequirement": "GENERATE_AND_VERIFY_WITH_REAL_ENGINE_WHEN_AVAILABLE",
+  "privacy": "DO_NOT_SEND_PRIVATE_WITNESS_TO_BROWSER",
+  "notes": [
+    "Eligibility illustration is not signed authorization",
+    "Do not display AUTHORIZED unless actual signer, mandate and proof checks succeed"
+  ]
+}

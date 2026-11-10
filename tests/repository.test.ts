@@ -14,7 +14,7 @@ describe('independent product repository boundary',()=>{
  });
  it('has no linked Git objects or tracked symlinks/gitlinks',()=>{
   expect(lstatSync('.git').isDirectory()).toBe(true);expect(existsSync('.git/objects/info/alternates')).toBe(false);expect(existsSync('.gitmodules')).toBe(false);
-  expect(git('ls-files','--stage').split('\n').every(line=>line.startsWith('100644 '))).toBe(true);
+  expect(git('ls-files','--stage').split('\n').every(line=>/^100(?:644|755) /.test(line))).toBe(true);
  });
  it('resolves its source imports within this repository and has no local package dependency',()=>{
   const pkg=JSON.parse(readFileSync('package.json','utf8'));expect(pkg.name).toBe('vereqo');

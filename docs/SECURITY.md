@@ -1,13 +1,24 @@
-# Security boundary
+# Security boundaries
 
-Current application is LOCAL_REFERENCE, synthetic, localhost-only. Do not use real confidential information or remotely expose this shared fixture service. The GET state token is public process-local CSRF protection, not identity/authentication. SQLite stores a demo witness in plaintext on the issuer side; this is not a production secret store or ZK system.
+## Authorization
 
-Preserve witness-independent preflight/admission; answer evaluation only after deterministic admission in the same transaction; release only after COMMIT; rollback/COMMIT/crash failures and multi-process serialization must fail closed. Knowledge scope is issuer/subject/authorized cohort independent of policy epoch. Caller-selected project/cohort is not authentication. Denied records never contain answers. History/idempotency and stale generation guards remain explicit.
+- Wallet ownership authentication is separate from financial authorization. An authenticated address or session must never be treated as permission to sign, grant, deposit, withdraw, or order.
+- Agent proposals are untrusted, unsigned input. The Agent receives no owner private key or transaction-signing capability.
+- Financial execution is disabled in this release. The production market-risk gate remains fail-closed.
+- Expiry, nonce use, revocation, Request binding, and policy checks must fail closed when the relevant state cannot be verified.
 
-Intent encoding binds every financial field, chain and verifying contract in EIP-712 domain VEREQO/version1. Domain differences intentionally produce different digests; no other product signatures are accepted by this schema boundary. The digest contract performs no proof verification, authorization, nonce consumption or execution. Supplied caller/context values do not establish identity/ownership. X-VEREQO-Token must match client/server tests; other/missing headers fail closed.
+## Data handling
 
-No wallet authentication, issuer signatures, prover/verifier, grants, protected executor, custody, settlement, RWA eligibility or compliance enforcement is implemented. There is no transaction/broadcast path to demonstrate. Further signing, funding or testnet deployment requires separate explicit authorization.
+Do not commit secrets, API tokens, seed phrases, Wallet signatures, session tokens, raw HAR files, local SQLite state, or private evidence. The release candidate excludes local state, internal evidence, submission media, and source-package archives. Runtime logs and deployment bundles must not contain authentication values.
 
-Next prioritized gate: specify trusted principal/mandate and exact Injective-native intent mapping; pin external protocol evidence with read-only compatibility tests; design a non-bypassable ActionGate and negative tests for unauthorized/revoked/expired/replayed/malformed/direct-route attempts before implementing execution. No automatic deployment.
+## Cryptographic limits
 
-Secrets: .env/keys/databases/caches/outputs are ignored; scan all reachable commits before any remote upload. Automated scans are bounded pattern detection, not production certification. Keep provenance/custody records outside the product tree without misrepresenting imported work as newly authored.
+Local Groth16 setup and local mock tests are not production trust evidence. Do not describe local proof verification as a trusted production credential. Operator or fixture keys used in tests are not independent Issuer credentials.
+
+## Market and Gate limits
+
+A market snapshot is a preflight observation; it does not guarantee that price, book depth, balance, permissions, nonce, or expiry remain valid at execution time. This release does not provide a Testnet-verified full financial lifecycle, deployed ActionGate, or independently proven principal recovery path.
+
+## Reporting
+
+Label evidence as REAL, LOCAL, SYNTHETIC, TESTNET READ, BLOCKED, or OWNER_REQUIRED as applicable. Do not turn isolated test results into a full end-to-end success claim.

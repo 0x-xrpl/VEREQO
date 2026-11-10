@@ -15,11 +15,21 @@
     "test:integration": "vitest run tests/persistence.test.ts tests/demo-persistence.test.ts tests/http.test.ts tests/red-team-http.test.ts tests/red-team-disclosure.test.ts tests/red-team-reset.test.ts tests/backend.test.ts tests/react-api.test.tsx",
     "test:ui": "vitest run tests/controls.test.ts tests/react-api.test.tsx",
     "test:browser": "node --import tsx scripts/browser-qa.ts",
+    "test:financial-browser": "node --import tsx scripts/financial-browser-qa.ts",
+    "test:operation59-browser": "node --import tsx scripts/operation59-browser-qa.ts",
+    "evidence:operation59": "node scripts/operation59-manifest.mjs",
+    "test:financial-auth": "vitest run tests/financial-authorization.test.ts && forge test --root contracts --match-contract FinancialAuthorizationE2ETest -vv",
     "test:contracts": "forge test --root contracts -vv",
     "build": "vite build",
     "check": "npm run typecheck && npm test && npm run build",
     "evidence": "node --import tsx scripts/evidence.ts",
-    "smoke": "node --import tsx scripts/smoke.ts"
+    "smoke": "node --import tsx scripts/smoke.ts",
+    "test:zk": "node scripts/zk-local.mjs",
+    "read:injective": "node --import tsx scripts/injective-read.ts",
+    "test:wallet-browser": "node --import tsx scripts/wallet-browser-qa.ts",
+    "demo:operation60": "node --import tsx scripts/operation60-demo-capture.ts",
+    "test:operation63-browser": "node scripts/operation63-phase-a-visual-qa.mjs",
+    "test:operation-final-s08-browser": "node --import tsx scripts/operation-final-s08-browser-qa.ts"
   },
   "dependencies": {
     "ethers": "6.17.0",
@@ -31,12 +41,20 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.2.1",
+    "circom2": "0.2.22",
+    "circomlib": "2.0.5",
+    "circomlibjs": "0.1.7",
     "happy-dom": "21.0.4",
     "playwright": "1.64.1",
+    "snarkjs": "0.7.5",
     "tsx": "4.23.15",
     "typescript": "5.9.3",
     "vite": "8.3.5",
     "vitest": "5.1.0"
   },
-  "description": "Confidential Proof & Consequence Instrument for Injective Financial Operations."
+  "description": "Confidential Proof & Consequence Instrument for Injective Financial Operations.",
+  "overrides": {
+    "underscore": "1.13.8",
+    "ws": "8.22.2"
+  }
 }

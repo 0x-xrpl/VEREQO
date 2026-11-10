@@ -1,0 +1,43 @@
+/* Inspection controls only. This presentation never grants financial authority. */
+.deckDialTask{display:flex;gap:4px;padding:3px;background:#dfe7e5;border-radius:6px;margin:0 0 12px}
+.deckDialTask button{flex:1;min-height:36px;padding:6px 10px;border:0;border-radius:4px;background:transparent;color:var(--mid);font:9px var(--mono);letter-spacing:.08em}
+.deckDialTask button[aria-pressed=true]{background:#f9fbfa;color:var(--ink);box-shadow:0 1px 2px #263d3514}
+.dialConfirm{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;width:58px;height:58px;border-radius:50%;border:1px solid #c4cfcc;background:radial-gradient(circle at 35% 25%,#fff,#d6dfdc 85%);color:#506860;font:21px var(--mono);box-shadow:0 2px 4px #2e484220,inset 0 1px #fff;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:box-shadow 100ms,background-color 100ms}
+.dialConfirm:active{background:#d7e0dc;box-shadow:inset 0 1px 3px #35483e38}
+.dialConfirm:disabled{cursor:default;opacity:.45}
+.dialConfirm:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
+.deckConfirmation{min-height:65px;margin:12px 0 0;font:10px/1.7 var(--ui);color:var(--mid);text-align:center}
+.deckConfirmation[data-confirmed=true]{color:var(--green)}
+.deckConfirmation small{display:block;font-size:9px;line-height:1.6;margin-top:4px;color:var(--mid)}
+.work .brokerLane{padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.work .laneHeading{padding:3px 2px 13px;border-bottom:1px solid var(--edge);margin-bottom:14px}
+.work .boardLanes{gap:24px}
+.work .boardLanes .credentialTile,.work .boardLanes .outcomeCard{appearance:none;border:1px solid #cedbd5;border-radius:8px;background:#f7faf8;box-shadow:none;outline:none;outline-offset:0;-webkit-tap-highlight-color:transparent}
+.work .boardLanes .outcomeCard .outhead{background:transparent;border-bottom-color:#dce5e0;gap:12px;font-size:9px;line-height:1.6;flex-wrap:wrap}
+.work .boardLanes .outcomeCard.quiet{background:#f3f8f5}
+.work .boardLanes .outcomeCard.affected{background:#f8eeea;border-color:#d8b9ad}
+.work .boardLanes .outcomeCard[aria-pressed=true],.work .credentialTile[aria-pressed=true]{border-color:#6c9585;background:#eaf2ed;outline:none;box-shadow:none}
+.work .boardLanes .outcomeCard.affected[aria-pressed=true]{border-color:#b97e69;background:#f5e7e0}
+.work .heatTile[aria-pressed=true]{outline:none;box-shadow:none;border-color:#739889;background:#edf4ef}
+.work .contextOptions button[aria-pressed=true]{box-shadow:none;border-color:#739889;background:#edf4ef}
+.work .boardLanes button:focus:not(:focus-visible),.work .heatTile:focus:not(:focus-visible){outline:none}
+.work .boardLanes .outcomeCard:focus-visible,.work .boardLanes .credentialTile:focus-visible,.work .heatTile:focus-visible,.work .contextOptions button:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+.work .device .display{display:grid;grid-template-rows:minmax(30px,auto) 28px 82px minmax(48px,auto) 28px auto;align-content:start;gap:10px;min-height:350px;padding:20px 16px}
+.work .device .display>.label{min-height:0;height:auto;line-height:1.7;align-self:start;font-size:9px}
+.work .device .lcdDecision{display:flex;align-items:center;gap:7px;color:#c3d8ca;font:9px/1.6 var(--mono);letter-spacing:.015em}
+.lcdDecision i{flex:0 0 5px;width:5px;height:5px;border-radius:50%;background:currentColor}
+.work .device .display[data-decision=denied] .lcdDecision,.work .device .display[data-decision=blocked] .lcdDecision,.work .device .display[data-decision=revoked] .lcdDecision{color:#efb6a2}
+.work .device .display[data-decision=unknown] .lcdDecision,.work .device .display[data-decision=waiting] .lcdDecision,.work .device .display[data-decision=stale] .lcdDecision,.work .device .display[data-decision=what_if] .lcdDecision{color:#e4ce9d}
+.work .device .displayValue.lcdValueFixed{font:400 clamp(56px,5vw,72px)/1 var(--mono);letter-spacing:-.07em;font-variant-numeric:tabular-nums;height:82px;min-height:82px;margin:0;display:flex;align-items:center;color:#e6efea}
+.work .device .displayCaption.lcdCaptionFixed{height:auto;min-height:48px;margin:0;color:#bbc9c3;font-size:11px;line-height:1.65!important;overflow:visible}
+.work .device .lcdRuler{height:28px;margin:0;gap:2px;align-self:end}
+.work .device .display[data-decision=denied] .lcdRuler i.on{background:#e5b09c}
+.work .device .lcdFoot{padding-top:10px;margin-top:6px;align-self:end;font-size:9px;line-height:1.6;gap:8px}
+@media(max-width:560px){
+ .work .boardLanes{gap:24px}
+ .work .device .display{grid-template-rows:minmax(30px,auto) 28px 76px minmax(44px,auto) 28px auto;min-height:328px;padding:20px}
+ .work .device .displayValue.lcdValueFixed{font-size:68px;height:76px;min-height:76px}
+ .deckDialTask{max-width:230px;margin:0 auto 12px}
+ .deckConfirmation{min-height:56px;max-width:260px;margin:12px auto 0}
+}
+@media(prefers-reduced-motion:reduce){.dialConfirm{transition:none}}

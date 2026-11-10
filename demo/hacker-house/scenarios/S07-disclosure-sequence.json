@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "1.0.0",
+  "dataClass": "SYNTHETIC_REHEARSAL",
+  "targetNetwork": {
+    "name": "Injective EVM Testnet",
+    "chainId": 1439,
+    "verifiedOnChain": false
+  },
+  "chainEvidence": {
+    "transactionHash": null,
+    "blockHash": null,
+    "blockHeight": null,
+    "marketId": null,
+    "orderHash": null,
+    "executionStatus": "NOT_EXECUTED"
+  },
+  "releaseClaims": {
+    "realWalletSigned": false,
+    "realGroth16Proved": false,
+    "gateExecuted": false,
+    "orderCreated": false,
+    "orderFilled": false
+  },
+  "scenarioId": "S07-disclosure-sequence",
+  "title": "Repeated queries may leak a private threshold",
+  "businessQuestion": "Will a second proof request reveal more than policy permits?",
+  "category": "PRIVACY",
+  "story": "The same requester probes a private condition through multiple overlapping questions.",
+  "inputs": {
+    "credentialId": "credential-A",
+    "requests": [
+      "predicate-eligible-480",
+      "predicate-eligible-590"
+    ],
+    "historyRequired": true,
+    "disclosureBudgetStatus": "POLICY_REVIEW_REQUIRED"
+  },
+  "operatorActions": [
+    "LOAD_DISCLOSURE_HISTORY",
+    "REQUEST_SECOND_PREDICATE",
+    "REVIEW_DECISION"
+  ],
+  "expectedObservations": [
+    {
+      "at": "REQUEST_SECOND_PREDICATE",
+      "state": "POLICY_REVIEW_REQUIRED",
+      "reason": "Each request must pass cumulative disclosure admission; no blanket permission from first proof"
+    }
+  ],
+  "proofRequirement": "GENERATE_AND_VERIFY_WITH_REAL_ENGINE_WHEN_AVAILABLE",
+  "privacy": "DO_NOT_SEND_PRIVATE_WITNESS_TO_BROWSER",
+  "notes": [
+    "No formal privacy property is established by this example alone"
+  ]
+}

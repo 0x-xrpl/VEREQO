@@ -42,9 +42,10 @@ beforeEach(async () => {
     if (typeof message === 'object' && message && 'port' in message) resolve(Number(message.port));
     else reject(new Error('Invalid test server startup')); }); });
   base = `http://127.0.0.1:${port}`; calls = []; loseNextQueryResponse = false; loseNextResetResponse = false; failNextPreflightResponse = false;
+  window.localStorage.clear();
   // The real app is same-origin. Configure the DOM document accordingly;
   // cross-origin rejection remains tested separately by the security suite.
-  (window as unknown as { happyDOM: { setURL(url: string): void } }).happyDOM.setURL(base);
+  (window as unknown as { happyDOM: { setURL(url: string): void } }).happyDOM.setURL(`${base}/?lang=ja`);
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = new URL(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url, base);
     calls.push({ path: url.pathname, body: typeof init?.body === 'string' ? init.body : '', method: init?.method ?? 'GET' });
@@ -78,6 +79,34 @@ afterEach(async () => {
 });
 
 describe('Instrument React + real local issuer integration', () => {
+  it('synchronizes Impact Map targets and dial, and confirms inspection without security writes',async()=>{
+    await click('dial-target');await click('tile:broker-b');
+    expect(el('work-dial').getAttribute('aria-valuenow')).toBe('2');
+    const before=await backend(),count=mutations().length,previews=calls.filter(call=>call.path==='/api/preview').length;
+    await act(async()=>el('work-dial').dispatchEvent(new KeyboardEvent('keydown',{key:'Home',bubbles:true})));
+    expect(el('tile:broker-a').getAttribute('aria-pressed')).toBe('true');
+    await click('work-confirm');
+    expect(el('inspection-confirmation').getAttribute('data-confirmed')).toBe('true');
+    expect(el('work-dial').getAttribute('aria-valuenow')).toBe('1');
+    await click('tile:broker-b');
+    expect(el('inspection-confirmation').getAttribute('data-confirmed')).toBe('false');
+    await act(async()=>el('work-dial').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true})));
+    expect(el('inspection-confirmation').getAttribute('data-confirmed')).toBe('true');
+    expect(mutations()).toHaveLength(count);expect(calls.filter(call=>call.path==='/api/preview')).toHaveLength(previews);
+    const after=await backend();expect(after.graph.sequence).toBe(before.graph.sequence);expect(after.disclosure.history).toEqual(before.disclosure.history);
+  });
+  it('shows UNKNOWN with no stale LCD count when preflight observation fails',async()=>{
+    await click('mode-disclosure');await waitFor(()=>!el<HTMLButtonElement>('submit-query').disabled);
+    expect(el('working-lcd').textContent).toBe('128');
+    failNextPreflightResponse=true;await click('work-plus');
+    await waitFor(()=>el('deck-display').getAttribute('data-decision')==='unknown');
+    expect(el('working-lcd').textContent).toBe('—');
+    expect(el('lcd-meter').querySelectorAll('i')).toHaveLength(34);
+    expect(el('lcd-meter').querySelectorAll('i.on')).toHaveLength(0);
+    expect(el<HTMLButtonElement>('work-confirm').disabled).toBe(true);
+    expect(mutations()).toHaveLength(0);
+  });
+
   it('inspects natural questions and nested Back/Esc without another preview or security write',async()=>{
     await click('key-primary');await waitFor(()=>el('working-lcd').textContent==='06');
     const count=mutations().length,previews=calls.filter(call=>call.path==='/api/preview').length;
@@ -193,7 +222,8 @@ describe('Instrument React + real local issuer integration', () => {
     loseNextQueryResponse = true; await click('submit-query');
     await waitFor(() => !!host.querySelector('[role="alert"]'));
     expect((await backend()).disclosure.history).toHaveLength(1);
-    expect(el('working-lcd').textContent).toBe('128');
+    expect(el('working-lcd').textContent).toBe('—');
+    expect(el('deck-display').getAttribute('data-decision')).toBe('unknown');
     expect(el('selected-outcome').textContent).toContain('未確認');
     await click('submit-query'); await waitFor(() => el('working-lcd').textContent === '101');
     const bodies = mutations().filter(call => call.path === '/api/query').map(call => JSON.parse(call.body) as { idempotencyKey: string });
@@ -217,7 +247,8 @@ describe('Instrument React + real local issuer integration', () => {
     const resetState = await backend();
     expect(resetState.requestToken).not.toBe(priorToken);
     expect(resetState.disclosure.history).toHaveLength(0);
-    expect(el('working-lcd').textContent).toBe('101');
+    expect(el('working-lcd').textContent).toBe('—');
+    expect(el('deck-display').getAttribute('data-decision')).toBe('unknown');
     expect(host.querySelector('[role="alert"]')?.textContent).toContain('未確認');
     expect(el<HTMLButtonElement>('submit-query').disabled).toBe(true);
     const mutationCount = mutations().length;

@@ -1,0 +1,15 @@
+export const MANIFEST: string;
+export const FIXTURES: string;
+export const LOCAL_DIR: string;
+export const PUBLIC_INPUTS: string[];
+export function hashBytes(value: string | Uint8Array): string;
+export function hashFile(path: string): string;
+export function stable(value: Record<string,string>): string;
+export function assertSameHashes(expected: Record<string,string>, actual: Record<string,string>, label: string): void;
+export function circuitSources(root?: string, entry?: string): Record<string,string>;
+export function toolchainSources(root?: string): Record<string,string>;
+export function solidityFixtureVector(source: string): {points:string[];commitment:string;digest?:string};
+export function assertFixtureContract(fixture: {solidity: unknown[];publicSignals:string[];digest?:string},source:string): void;
+export function validatePinnedSources(root?: string): {manifest: Record<string,unknown>;fixtures: Record<string,unknown>};
+export function validateCompiledArtifacts(dir:string, manifest:Record<string,unknown>): Record<string,string>;
+export function validatePinnedKey(path:string, manifest:Record<string,unknown>): Promise<unknown>;

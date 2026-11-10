@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VEREQO Rehearsal Scenario",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion","dataClass","scenarioId","title","businessQuestion","category","story","targetNetwork","chainEvidence","releaseClaims","inputs","operatorActions","expectedObservations","proofRequirement","privacy","notes"],
+  "properties": {
+    "schemaVersion":{"const":"1.0.0"},
+    "dataClass":{"const":"SYNTHETIC_REHEARSAL"},
+    "scenarioId":{"type":"string","pattern":"^S[0-9]{2}-[a-z0-9-]+$"},
+    "title":{"type":"string","minLength":8},
+    "businessQuestion":{"type":"string","minLength":8},
+    "category":{"type":"string"},
+    "story":{"type":"string"},
+    "targetNetwork":{"type":"object","required":["chainId","verifiedOnChain"],"properties":{"chainId":{"const":1439},"verifiedOnChain":{"const":false}}},
+    "chainEvidence":{"type":"object","required":["transactionHash","orderHash","executionStatus"]},
+    "releaseClaims":{"type":"object","required":["realWalletSigned","realGroth16Proved","gateExecuted","orderCreated","orderFilled"]},
+    "inputs":{"type":"object"},
+    "operatorActions":{"type":"array","minItems":1,"items":{"type":"string"}},
+    "expectedObservations":{"type":"array","minItems":1,"items":{"type":"object","required":["at","state"]}},
+    "proofRequirement":{"const":"GENERATE_AND_VERIFY_WITH_REAL_ENGINE_WHEN_AVAILABLE"},
+    "privacy":{"const":"DO_NOT_SEND_PRIVATE_WITNESS_TO_BROWSER"},
+    "notes":{"type":"array","items":{"type":"string"}}
+  }
+}

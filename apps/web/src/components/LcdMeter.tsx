@@ -3,6 +3,7 @@ import type { NodeChange } from '../../../../packages/consequence/src/index';
 import { disclosureBarLevels, impactBarLevels, LCD_BAR_KEYS } from '../dialMath';
 
 interface LcdMeterProps {
+  publicMetric?: { value: number; total: number };
   mode: 'impact' | 'disclosure';
   candidates: readonly number[];
   changes: readonly NodeChange[];
@@ -10,10 +11,10 @@ interface LcdMeterProps {
   label: string;
 }
 
-export function LcdMeter({ mode, candidates, changes, totalNodes, label }: LcdMeterProps) {
+export function LcdMeter({ mode, candidates, changes, totalNodes, label, publicMetric }: LcdMeterProps) {
   // An authoritative change can preserve its status while changing its epoch.
   const count = new Set(changes.map(change => change.nodeId)).size;
-  const levels = mode === 'disclosure' ? disclosureBarLevels(candidates) : impactBarLevels(count, totalNodes);
+  const levels = publicMetric ? impactBarLevels(publicMetric.value, publicMetric.total) : mode === 'disclosure' ? disclosureBarLevels(candidates) : impactBarLevels(count, totalNodes);
   return <div className="lcdRuler" role="img" aria-label={label} data-testid="lcd-meter">
     {LCD_BAR_KEYS.map(index => {
       const level = levels[index] ?? 0;

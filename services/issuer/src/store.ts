@@ -1,9 +1,12 @@
 import { DatabaseSync } from 'node:sqlite';
+import { randomBytes } from 'node:crypto';
+import { AbiCoder, keccak256, toUtf8Bytes } from 'ethers';
 import { admit, applyAnswer, INITIAL_CANDIDATES, normalizeQuery, validatePolicy } from '../../../packages/disclosure/src/index';
 import type { DisclosurePolicy, DisclosurePreflight, DisclosureRecord, DisclosureView } from '../../../packages/domain/src/demo';
 
 export interface Scope { issuer: string; subject: string; cohort: string }
 export interface AuthContext { principal: string; scope: Scope }
+export interface DisclosureHistoryHead { readonly historyRoot: string; readonly historySequence: string; readonly policyEpoch: string }
 export type ErrorCode = 'INVALID_INPUT' | 'UNAUTHORIZED' | 'STALE_POLICY' | 'IDEMPOTENCY_CONFLICT' | 'CORRUPT_HISTORY' | 'DATABASE_UNAVAILABLE';
 export class IssuerError extends Error {
   constructor(readonly code: ErrorCode) { super(code); }
@@ -34,10 +37,26 @@ export class IssuerStore {
         scope_id TEXT NOT NULL REFERENCES scopes(id), sequence INTEGER NOT NULL CHECK(sequence>0),
         idempotency_key TEXT NOT NULL, request TEXT NOT NULL, record TEXT NOT NULL,
         PRIMARY KEY(scope_id,sequence), UNIQUE(scope_id,idempotency_key));
+      CREATE TABLE IF NOT EXISTS disclosure_commitments (
+        scope_id TEXT NOT NULL, sequence INTEGER NOT NULL CHECK(sequence>0), blind TEXT NOT NULL CHECK(length(blind)=66),
+        PRIMARY KEY(scope_id,sequence), FOREIGN KEY(scope_id,sequence) REFERENCES disclosures(scope_id,sequence));
       CREATE TRIGGER IF NOT EXISTS witness_immutable BEFORE UPDATE ON witnesses BEGIN SELECT RAISE(ABORT,'immutable witness'); END;
       CREATE TRIGGER IF NOT EXISTS policy_immutable BEFORE UPDATE ON policies BEGIN SELECT RAISE(ABORT,'immutable policy'); END;
+      CREATE TRIGGER IF NOT EXISTS policy_delete_immutable BEFORE DELETE ON policies BEGIN SELECT RAISE(ABORT,'immutable policy'); END;
       CREATE TRIGGER IF NOT EXISTS disclosure_immutable BEFORE UPDATE ON disclosures BEGIN SELECT RAISE(ABORT,'immutable transcript'); END;
+      CREATE TRIGGER IF NOT EXISTS disclosure_delete_immutable BEFORE DELETE ON disclosures BEGIN SELECT RAISE(ABORT,'immutable transcript'); END;
+      CREATE TRIGGER IF NOT EXISTS disclosure_commitment_immutable BEFORE UPDATE ON disclosure_commitments BEGIN SELECT RAISE(ABORT,'immutable commitment'); END;
+      CREATE TRIGGER IF NOT EXISTS disclosure_commitment_delete_immutable BEFORE DELETE ON disclosure_commitments BEGIN SELECT RAISE(ABORT,'immutable commitment'); END;
     `);
+    // Backfill opaque blinds for old transcripts. Blinds stay server-side so the public
+    // root cannot be used as an offline oracle for the low-entropy disclosure answers.
+    this.atomic(() => {
+      const missing = db.prepare(`SELECT d.scope_id, d.sequence FROM disclosures d
+        LEFT JOIN disclosure_commitments c ON c.scope_id=d.scope_id AND c.sequence=d.sequence
+        WHERE c.sequence IS NULL ORDER BY d.scope_id, d.sequence`).all() as Array<{ scope_id: string; sequence: number | bigint }>;
+      const insert = db.prepare('INSERT INTO disclosure_commitments(scope_id,sequence,blind) VALUES(?,?,?)');
+      for (const row of missing) insert.run(row.scope_id, row.sequence, `0x${randomBytes(32).toString('hex')}`);
+    });
   }
 
   close(): void { this.db.close(); }
@@ -83,9 +102,12 @@ export class IssuerStore {
     try {
       let candidates = [...INITIAL_CANDIDATES];
       const history: DisclosureRecord[] = [];
-      const rows = this.db.prepare('SELECT * FROM disclosures WHERE scope_id=? ORDER BY sequence').all(id);
+      const rows = this.db.prepare(`SELECT d.*, c.blind AS commitment_blind FROM disclosures d
+        LEFT JOIN disclosure_commitments c ON c.scope_id=d.scope_id AND c.sequence=d.sequence
+        WHERE d.scope_id=? ORDER BY d.sequence`).all(id);
       let lastEpoch = 0;
       for (const row of rows) {
+        if (typeof row.commitment_blind !== 'string' || !/^0x[0-9a-f]{64}$/.test(row.commitment_blind)) throw new Error('MISSING_COMMITMENT');
         const record = JSON.parse(String(row.record)) as DisclosureRecord;
         if (record.sequence !== history.length + 1 || row.sequence !== record.sequence ||
           record.idempotencyKey !== row.idempotency_key || !identifier(record.idempotencyKey) ||
@@ -116,6 +138,31 @@ export class IssuerStore {
 
   view(context: AuthContext): DisclosureView {
     return this.atomic(() => { const { id, policy } = this.authorize(context); return this.replay(id, policy); });
+  }
+
+  /** Return the current opaque, scope-specific history commitment for server-side issuer checks. */
+  historyHead(context: AuthContext): DisclosureHistoryHead {
+    return this.atomic(() => {
+      const { id, policy } = this.authorize(context);
+      const view = this.replay(id, policy);
+      const scopeHash = keccak256(toUtf8Bytes(id));
+      let root = keccak256(AbiCoder.defaultAbiCoder().encode(
+        ['string', 'bytes32'], ['VEREQO_DISCLOSURE_HISTORY_V1_INITIAL', scopeHash],
+      ));
+      const rows = this.db.prepare(`SELECT d.sequence, d.record, c.blind FROM disclosures d
+        JOIN disclosure_commitments c ON c.scope_id=d.scope_id AND c.sequence=d.sequence
+        WHERE d.scope_id=? ORDER BY d.sequence`).all(id) as Array<{ sequence: number | bigint; record: string; blind: string }>;
+      for (const row of rows) {
+        if (!/^0x[0-9a-f]{64}$/.test(row.blind)) throw new IssuerError('CORRUPT_HISTORY');
+        const recordHash = keccak256(toUtf8Bytes(row.record));
+        root = keccak256(AbiCoder.defaultAbiCoder().encode(
+          ['string', 'bytes32', 'bytes32', 'uint256', 'bytes32', 'bytes32'],
+          ['VEREQO_DISCLOSURE_HISTORY_V1_STEP', root, scopeHash, BigInt(row.sequence), recordHash, row.blind],
+        ));
+      }
+      if (rows.length !== view.history.length) throw new IssuerError('CORRUPT_HISTORY');
+      return Object.freeze({ historyRoot: root, historySequence: String(view.history.length), policyEpoch: String(policy.epoch) });
+    });
   }
 
   /** Public-history-only proposal check; it neither reads a witness nor records a release. */
@@ -161,6 +208,8 @@ export class IssuerStore {
         record.remainingAfter = applyAnswer(view.candidates, query, answer).length;
       }
       this.db.prepare('INSERT INTO disclosures VALUES(?,?,?,?,?)').run(id, record.sequence, input.idempotencyKey, request, JSON.stringify(record));
+      this.db.prepare('INSERT INTO disclosure_commitments(scope_id,sequence,blind) VALUES(?,?,?)')
+        .run(id, record.sequence, `0x${randomBytes(32).toString('hex')}`);
       return record;
     });
   }

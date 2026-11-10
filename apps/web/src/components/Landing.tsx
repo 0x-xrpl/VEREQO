@@ -4,14 +4,14 @@ import { Dial } from './Dial';
 import { disclosureBarLevels } from '../dialMath';
 
 type Language = 'ja' | 'en';
-interface LandingProps { language: Language; onStart: () => void; onGuided?: () => void; onWallet?: () => void; onProject?: () => void; active?: boolean }
+interface LandingProps { onFinancial?: () => void; language: Language; onStart: () => void; onGuided?: () => void; onWallet?: () => void; onProject?: () => void; active?: boolean }
 
 const copy = {
   ja: {
-    eyebrow: 'VEREQO / ヴェレコ — 外部AIブローカーのための取引管理',
-    headline: ['AIに任せる注文を、', '決める。'],
-    promise: '社内の取引上限は、渡さない。',
-    description: '取引チームが、外部AIブローカーへの回答と注文条件を確認する場所。何を答えられるか、どの操作が止まるかを、理由とともに見渡せます。',
+    eyebrow: '機密ポリシー / 金融Intentの検査',
+    headline: ['提案を検査し、', '境界を保つ。'],
+    promise: '認証と取引権限を、分けて示す。',
+    description: '機密ルールの開示と、Agentが提案する金融操作の影響を検査するインストゥルメントです。現在のTestnet連携は読み取り専用で、注文送信・資産保管・自律執行は行いません。',
     start: '取引デモを体験', how: '仕組みを見る',
     entryNote: 'ウォレット不要 · 合成データのローカルデモ',
     scene: '製品の動きを見る', illustration: '説明用の例 / 取引は実行しません',
@@ -52,10 +52,10 @@ const copy = {
     closingBody: 'まずは一つのProject、二つのブローカーから。回答、制限、影響の違いを、ご自身の操作で確かめてください。',
   },
   en: {
-    eyebrow: 'TRADING CONTROL FOR EXTERNAL AI BROKERS',
-    headline: ['Control the orders', 'you delegate.'],
-    promise: 'Keep your trading limits private.',
-    description: 'A place for trading teams to inspect what external AI brokers may learn and do. See which answers can be released, which operations would stop, and precisely why.',
+    eyebrow: 'CONFIDENTIAL POLICY / FINANCIAL INTENT REVIEW',
+    headline: ['Review the proposal.', 'Keep control.'],
+    promise: 'Authentication is not trading authority.',
+    description: 'VEREQO inspects confidential policy disclosures and the consequences of Agent-proposed financial actions. Its current Injective Testnet integration is read-only: it does not submit orders, custody funds, or execute autonomously.',
     start: 'Explore the Demo', how: 'How It Works',
     entryNote: 'No wallet required · Synthetic local demo',
     scene: 'See the product in motion', illustration: 'Illustrative example / No trade is executed',
@@ -97,11 +97,11 @@ const copy = {
   },
 } as const;
 
-export function Landing({ language, onStart, onGuided, onWallet, onProject, active = true }: LandingProps) {
+export function Landing({ onFinancial, language, onStart, onGuided, onWallet, onProject, active = true }: LandingProps) {
   const t = copy[language];
   const [phase, setPhase] = useState(1);
   const [playing, setPlaying] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(() => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const index = phase - 1;
   const surface=useRef<HTMLDivElement>(null);
   const illustrativeLevels = disclosureBarLevels(Array.from({ length: phase===1?128:81 }, (_, value) => value));
@@ -117,6 +117,33 @@ export function Landing({ language, onStart, onGuided, onWallet, onProject, acti
   useEffect(() => {
     if (!active) setPlaying(false);
   }, [active]);
+
+  useEffect(() => {
+    const root = surface.current;
+    const hero = root?.querySelector<HTMLElement>('[data-testid="live-hero"]');
+    if (!root || !hero || !active || reducedMotion) return;
+    const reset = () => {
+      hero.style.setProperty('--pointer-shift-x', '0px');
+      hero.style.setProperty('--pointer-shift-y', '0px');
+    };
+    const move = (event: PointerEvent) => {
+      if (event.pointerType === 'touch') return;
+      const rect = hero.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const x = Math.max(-1, Math.min(1, (event.clientX - rect.left - rect.width / 2) / (rect.width / 2)));
+      const y = Math.max(-1, Math.min(1, (event.clientY - rect.top - rect.height / 2) / (rect.height / 2)));
+      const scale = window.innerWidth <= 560 ? 3 : 7;
+      hero.style.setProperty('--pointer-shift-x', `${(x * scale).toFixed(1)}px`);
+      hero.style.setProperty('--pointer-shift-y', `${(y * scale * .65).toFixed(1)}px`);
+    };
+    root.addEventListener('pointermove', move, { passive: true });
+    root.addEventListener('pointerleave', reset, { passive: true });
+    return () => {
+      root.removeEventListener('pointermove', move);
+      root.removeEventListener('pointerleave', reset);
+      reset();
+    };
+  }, [active, reducedMotion]);
 
   useEffect(() => {
     if (!active || !playing || reducedMotion) return;
@@ -142,6 +169,7 @@ export function Landing({ language, onStart, onGuided, onWallet, onProject, acti
   };
 
   return <div ref={surface} className="productLanding" id="top" tabIndex={-1} data-testid="product-landing">
+    {onFinancial&&<section className="financialEntry" aria-labelledby="financial-entry-heading"><div className="financialEntryMain"><span className="u-eyebrow">INJECTIVE / SYNTHETIC REHEARSAL · S01</span><h2 id="financial-entry-heading">{language==='ja'?'Agentの提案を、許可と混同しない。':'A proposal is not permission.'}</h2><p>{language==='ja'?'Agent Aの指値Intent、非公開条件の判定、資格失効の影響を、実行前に同じBusiness IDで確認します。':'Inspect one Agent A limit intent, its private-policy check, and revocation consequences under one Business ID before execution.'}</p><button className="u-primary" type="button" data-testid="start-financial" onClick={onFinancial}>{language==='ja'?'金融rehearsalを開く':'Open financial rehearsal'} ↗</button><p className="u-entry-note">{language==='ja'?'合成入力 · live market IDなし · wallet署名 / proof / order送信なし':'Synthetic inputs · no live market ID · no wallet signature, proof, or order submission'}</p></div><div className="financialEntryIntent" data-testid="financial-entry-intent" aria-label={language==='ja'?'S01 合成intentの要約':'S01 synthetic intent summary'}><div className="financialEntryIntentTitle"><span>S01 / SYNTHETIC_FIXTURE</span><strong>{language==='ja'?'Operator intent':'Operator intent'}</strong></div><dl><div><dt>Agent</dt><dd>agent-external-A · SYNTHETIC</dd></div><div><dt>Principal</dt><dd>principal-operator-01 · SYNTHETIC</dd></div><div><dt>Market</dt><dd>INJ/USDT Spot · no live market ID</dd></div><div><dt>Side / type</dt><dd>BUY / LIMIT</dd></div><div><dt>Quantity</dt><dd>40 INJ · fixture</dd></div><div><dt>Limit price</dt><dd>12 USDT/INJ · fixture</dd></div><div><dt>Notional</dt><dd>480 USDT · fixture arithmetic</dd></div><div><dt>Decision</dt><dd>NOT RUN · NOT AUTHORIZED</dd></div></dl></div></section>}
     <section className="u-entry" aria-labelledby="product-headline">
       <div className="u-entry-copy">
         <p className="u-eyebrow">{t.eyebrow}</p>
@@ -151,7 +179,7 @@ export function Landing({ language, onStart, onGuided, onWallet, onProject, acti
         <div className="u-actions"><button type="button" className="u-primary" data-testid="start-demo" onClick={onStart}>{t.start}<span aria-hidden="true">↗</span></button><a className="u-text-link" href="#how-it-works">{t.how}</a></div>
         <p className="u-entry-note">{t.entryNote}</p><div className="u-entry-choices"><button type="button" data-testid="start-guided" onClick={onGuided??onStart}>{language==='ja'?'ガイド付きデモ':'Guided demo'} ↗</button><button type="button" data-testid="landing-wallet" onClick={onWallet}>{language==='ja'?'ウォレット接続':'Connect wallet'}</button><button type="button" data-testid="landing-project" onClick={onProject}>{language==='ja'?'Projectを作成':'Create project'}</button></div>
       </div>
-      <div className="heroDevice liveHero" data-testid="live-hero" aria-label={language==='ja'?'White Instrumentの説明用操作':'White Instrument explanation controls'}>
+      <div className="heroDevice liveHero" data-testid="live-hero" aria-label={language==='ja'?'CONTROL DECKの説明用操作':'CONTROL DECK explanation controls'}>
         <div className="heroDeviceTop"><span>WHITE INSTRUMENT<br/><small>VQ–01 / Prove what matters. Control what follows.</small></span><span className="heroSource">{language==='ja'?'説明用 / 合成データ':'ILLUSTRATIVE / SYNTHETIC'}<small>{language==='ja'?'APIへの送信なし':'NO API MUTATIONS'}</small><small>NOT EXECUTED</small></span></div>
         <div className="heroDevices"><div className="liveHeroDial"><Dial hero value={phase} min={1} max={3} label={t.dialLabel} valueText={t.phaseNames[index]??''} onChange={choosePhase}/><span>{t.dialLabel} / 1–3</span></div><div className="heroScreen"><span className="label">{t.displayLabels[index]}</span><strong data-testid="hero-lcd">{t.displayValues[index]}</strong><div className="heroMeter" aria-hidden="true" style={{visibility:phase===3?'hidden':'visible'}}>{illustrativeLevels.map((level,bar)=><i key={bar} style={{opacity:level>0?.34+.66*level:.12}}/>)}</div><p>{t.displayFoot[index]}</p></div></div>
         <div className="heroKeys" role="group" aria-label={t.scene}>{t.keys.map((label,key)=><button type="button" key={key} data-testid={`landing-scene-${key+1}`} aria-pressed={phase===key+1} onClick={()=>choosePhase(key+1)}><span>0{key+1}</span>{label}</button>)}</div>

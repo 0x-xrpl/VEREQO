@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0.0",
+  "dataClass": "SYNTHETIC_REHEARSAL",
+  "targetNetwork": {
+    "name": "Injective EVM Testnet",
+    "chainId": 1439,
+    "verifiedOnChain": false
+  },
+  "chainEvidence": {
+    "transactionHash": null,
+    "blockHash": null,
+    "blockHeight": null,
+    "marketId": null,
+    "orderHash": null,
+    "executionStatus": "NOT_EXECUTED"
+  },
+  "releaseClaims": {
+    "realWalletSigned": false,
+    "realGroth16Proved": false,
+    "gateExecuted": false,
+    "orderCreated": false,
+    "orderFilled": false
+  },
+  "scenarioId": "S03-revocation-causality",
+  "title": "Revoke Agent A, leave B unaffected",
+  "businessQuestion": "Which decisions change when Credential A is revoked?",
+  "category": "WHAT_IF",
+  "story": "One issuer and one principal have two independent credentials. A policy change should affect only dependent requests.",
+  "inputs": {
+    "credentialToPreview": "credential-A",
+    "dependencyGraph": {
+      "credential-A": [
+        "intent-A01",
+        "intent-A02"
+      ],
+      "credential-B": [
+        "intent-B01"
+      ]
+    },
+    "existingOpenOrderStatus": "UNKNOWN_NOT_CHAIN_VERIFIED"
+  },
+  "operatorActions": [
+    "LOAD_GRAPH",
+    "PREVIEW_REVOCATION",
+    "COMPARE_A_AND_B",
+    "INSPECT_EXISTING_ORDER"
+  ],
+  "expectedObservations": [
+    {
+      "at": "PREVIEW_REVOCATION",
+      "state": "WHAT_IF_ONLY",
+      "affected": [
+        "intent-A01",
+        "intent-A02"
+      ],
+      "unaffected": [
+        "intent-B01"
+      ]
+    },
+    {
+      "at": "INSPECT_EXISTING_ORDER",
+      "state": "UNKNOWN_NOT_CHAIN_VERIFIED",
+      "reason": "Revocation alone never proves an existing open order was canceled"
+    }
+  ],
+  "proofRequirement": "GENERATE_AND_VERIFY_WITH_REAL_ENGINE_WHEN_AVAILABLE",
+  "privacy": "DO_NOT_SEND_PRIVATE_WITNESS_TO_BROWSER",
+  "notes": []
+}

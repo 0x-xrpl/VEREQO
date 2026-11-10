@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "1.0.0",
+  "dataClass": "SYNTHETIC_REHEARSAL",
+  "targetNetwork": {
+    "name": "Injective EVM Testnet",
+    "chainId": 1439,
+    "verifiedOnChain": false
+  },
+  "chainEvidence": {
+    "transactionHash": null,
+    "blockHash": null,
+    "blockHeight": null,
+    "marketId": null,
+    "orderHash": null,
+    "executionStatus": "NOT_EXECUTED"
+  },
+  "releaseClaims": {
+    "realWalletSigned": false,
+    "realGroth16Proved": false,
+    "gateExecuted": false,
+    "orderCreated": false,
+    "orderFilled": false
+  },
+  "scenarioId": "S04-unverified-market",
+  "title": "No trusted market parameters",
+  "businessQuestion": "What happens when market fee, tick or status is unverified?",
+  "category": "FAIL_CLOSED",
+  "story": "Public feeds may be unpinned or stale; a correct proof does not override market-risk gate.",
+  "inputs": {
+    "intent": {
+      "intentId": "intent-A01",
+      "principalId": "principal-operator-01",
+      "agentId": "agent-external-A",
+      "issuerId": "issuer-demo-01",
+      "credentialId": "credential-A",
+      "mandateId": "mandate-order-A01",
+      "marketSymbol": "INJ/USDT",
+      "side": "BUY",
+      "type": "LIMIT",
+      "quantity": "40",
+      "limitPrice": "12",
+      "units": "INJ, USDT/INJ",
+      "maxNotionalQuote": "480",
+      "signedIntent": null,
+      "issuerSignature": null,
+      "zkProof": null
+    },
+    "marketConsistency": "UNPINNED_LCD_READ",
+    "marketRiskVerified": false
+  },
+  "operatorActions": [
+    "LOAD_INTENT",
+    "RUN_RISK_CHECK",
+    "INSPECT_NONEXECUTION"
+  ],
+  "expectedObservations": [
+    {
+      "at": "RUN_RISK_CHECK",
+      "state": "MARKET_RISK_UNVERIFIED",
+      "expectedSideEffects": {
+        "nonceUsed": false,
+        "budgetReserved": false,
+        "precompileCalled": false
+      }
+    }
+  ],
+  "proofRequirement": "GENERATE_AND_VERIFY_WITH_REAL_ENGINE_WHEN_AVAILABLE",
+  "privacy": "DO_NOT_SEND_PRIVATE_WITNESS_TO_BROWSER",
+  "notes": []
+}

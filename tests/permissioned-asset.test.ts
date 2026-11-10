@@ -1,0 +1,15 @@
+import {describe,it,expect} from 'vitest';
+import {parsePermissionedAsset,assessPermission} from '../packages/domain/src/permissioned-asset';
+const issuer='0x1111111111111111111111111111111111111111',holder='0x2222222222222222222222222222222222222222',agent='0x3333333333333333333333333333333333333333';
+const asset={assetId:'test-token',issuer,assetClass:'TOKENIZED_SECURITY',holder,credentialId:'holder-1',credentialEpoch:'2',policyId:'transfer-policy',policyEpoch:'3',delegatedAgent:agent,operation:'TRANSFER',revocationDependency:'holder-1'};
+const observation={source:'injective-permissions-adapter',chainId:'1439',blockHeight:'100',observedAt:'1000',expiresAt:'1100',assetId:asset.assetId,issuer,holder,agent,credentialId:'holder-1',credentialEpoch:'2',policyId:'transfer-policy',policyEpoch:'3',operation:'TRANSFER',eligibility:'ELIGIBLE',credentialState:'ACTIVE'};
+const context={source:observation.source,chainId:'1439',now:'1010',minimumBlock:'99',maxAgeSeconds:'30',allowedPrincipals:new Set([holder])};
+describe('permissioned asset evidence boundary',()=>{
+ it('parses typed representation and never certifies or authorizes',()=>{expect(parsePermissionedAsset(asset)).toEqual(asset);expect(assessPermission(asset,observation,context)).toEqual({status:'OBSERVED',eligible:true,reason:'ELIGIBILITY_OBSERVED',authorized:false,regulatoryCompliance:'NOT_CERTIFIED'});});
+ it('defaults pending when real adapter is unavailable',()=>expect(assessPermission(asset,null,context)).toMatchObject({status:'PENDING',eligible:false,authorized:false}));
+ for(const [field,value] of Object.entries({source:'client',chainId:'1',blockHeight:'98',observedAt:'900',expiresAt:'1000',assetId:'different',issuer:agent,holder:agent,agent:holder,credentialId:'other',credentialEpoch:'1',policyId:'other',policyEpoch:'2',operation:'SPOT_ORDER',eligibility:'UNKNOWN',credentialState:'UNKNOWN'})) it(`rejects changed ${field}`,()=>expect(assessPermission(asset,{...observation,[field]:value},context).eligible).toBe(false));
+ it('revocation and ineligibility are observed refusals',()=>{expect(assessPermission(asset,{...observation,credentialState:'REVOKED'},context)).toMatchObject({status:'OBSERVED',eligible:false,reason:'CREDENTIAL_REVOKED'});expect(assessPermission(asset,{...observation,eligibility:'INELIGIBLE'},context).eligible).toBe(false);});
+ it('requires independently configured allowed principal',()=>expect(assessPermission(asset,observation,{...context,allowedPrincipals:new Set<string>()})).toMatchObject({eligible:false,reason:'PRINCIPAL_NOT_ALLOWED'}));
+ it('rejects malformed and extra fields without reading getters',()=>{expect(()=>parsePermissionedAsset({...asset,extra:true})).toThrow();expect(()=>parsePermissionedAsset({...asset,credentialEpoch:2})).toThrow();let reads=0;const a={...asset,get issuer(){reads++;return issuer;}};expect(()=>parsePermissionedAsset(a)).toThrow();expect(reads).toBe(0);expect(assessPermission(asset,{...observation,blockHeight:'1.5'},context).eligible).toBe(false);});
+ it('rejects future observation',()=>expect(assessPermission(asset,{...observation,observedAt:'1020'},context).eligible).toBe(false));
+});

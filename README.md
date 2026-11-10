@@ -1,21 +1,51 @@
-# VEREQO — ヴェレコ
+# VEREQO
 
-Confidential Proof & Consequence Instrument for Injective Financial Operations.
+**PROVE WHAT MATTERS. CONTROL WHAT FOLLOWS.**
 
-**Prove what matters. Control what follows.**
+VEREQO is a review instrument for inspecting confidential disclosures and Agent-proposed financial intents before any separate human authorization. It brings request context, policy checks, consequences, and evidence into one interface.
 
-A native industrial instrument for inspecting bounded disclosure questions and credential-dependent operations before acting. Current delivery is a shared synthetic localhost reference application, not a financial executor.
+## Product boundary
 
-## Run
+This repository contains a local-first review product and a financial prototype. The interface may show synthetic scenarios and read-only Injective Testnet observations. It does not submit orders, custody funds, or grant an Agent signing authority.
 
-Node22.13+ (22.x or24+), npm and the lockfile are required. Run npm ci, npm run check, then npm run dev. Open http://127.0.0.1:5173/. npm start serves the built app at127.0.0.1:4317. Never expose this demo to untrusted networks or real confidential data.
+- Ownership authentication identifies a wallet for a short-lived local session. It does not approve an intent or authorize a transaction. Sessions are process-local; no current owner session is implied.
+- Agent proposals are unsigned previews. A configured local model run is not autonomous financial execution.
+- Local Groth16 proofs use a single-machine setup that is **not trusted for production**. No production trusted setup or deployed verifier is claimed.
+- The latest recorded Injective read found no fresh two-sided book within the configured 10-second threshold across 216 active Spot markets. T5 remains **BLOCKED**; a past read is not current market state.
+- T6 local Foundry/mock coverage is local evidence only. The Gate is not deployed, and Deposit / Exchange Order / Cancel / Withdraw / Recovery have not been verified as a complete Testnet lifecycle.
+- Execution remains **NO-GO / NOT_IMPLEMENTED**. No Testnet transaction is claimed by this release.
 
-## Verified boundaries
+See `docs/SECURITY.md`, `docs/ARCHITECTURE.md`, and `docs/RELEASE_VALIDATION.md` for boundaries and reproducible checks.
 
-Public preflight releases nothing. The local issuer admits, evaluates, records and commits before returning an answer. The finite example is128→101→81, then threshold70 is denied71/10 with no answer. Separate A/B directed-dependency inspection preserves independentB.
+## Run locally
 
-The dial, three Hero keys, four working keys,34-bar LCD, nested evidence, deterministic read-only inquiry, source-separated timeline, JP/EN and reduced motion are native code.
+Requirements: Node.js `>=22.13.0 <23` or `>=24`.
 
-RealAI inference, production identity/auth, issuer signatures, ZK, wallet grants, custody, protected Injective execution and settlement are NOT_IMPLEMENTED. A public process-local CSRF token is not authentication. The EIP-712 domain is VEREQO/version1; another domain's signatures are incompatible. Digest/schema tests are not execution authorization.
+```sh
+npm ci
+npm run dev
+```
 
-See docs/ARCHITECTURE.md, docs/SECURITY.md, docs/ATTRIBUTION.md and docs/VALIDATION.md.
+The local web UI is served at `http://127.0.0.1:5173`; its local API uses port `4317`. Do not expose the development server to an untrusted network.
+
+## Verify and build
+
+```sh
+npm run typecheck
+npm test
+npm run build
+```
+
+The Vite build writes to `dist/web`. For a future Vercel project, set the output directory to `dist/web`; this release does not deploy or change hosting settings. The checked-in `.vercelignore` keeps local state, credentials, internal evidence, submission material, and media out of deployment uploads while preserving the app, brand, and licensed font build inputs.
+
+## Included assets and rights
+
+The app uses the supplied solid VEREQO brand files under `apps/web/public/brand/`. Their distribution rights are **not specified in this release**; no public deployment or redistribution is authorized by this repository. Local UI fonts include their OFL notices under `apps/web/public/fonts/`.
+
+## Product film
+
+A final, owner-approved film URL may be added here after media rights, privacy, and release review are complete. No draft URL is included.
+
+## Release scope
+
+This release branch is a single sanitized snapshot based on the private repository's `main`, not the 89-commit local operation history. Excluded items include Wallet source footage, video/audio masters, HAR files, SQLite databases, local proof/evidence records, private handoffs, and source brand-package archives. No secrets or production credentials are intended to be included.
